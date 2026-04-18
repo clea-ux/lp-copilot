@@ -1,12 +1,29 @@
-import { createClient } from '@/lib/supabase-server'
-import { redirect } from 'next/navigation'
+'use client'
 
-export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
-  if (!user) {
-    redirect('/login')
+export default function DashboardPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.push('/login')
+      } else {
+        setEmail(session.user.email ?? null)
+      }
+    })
+  }, [router])
+
+  if (!email) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Chargement...</p>
+      </div>
+    )
   }
 
   return (
@@ -14,7 +31,7 @@ export default async function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-lg p-8">
           <h1 className="text-2xl font-bold text-gray-900">
-            Bonjour {user.email} 👋
+            Bonjour {email} 👋
           </h1>
           <p className="mt-2 text-gray-600">
             Ton dashboard arrive bientôt.
