@@ -22,8 +22,6 @@ export default function AuthCallbackPage() {
             router.push('/login?error=auth')
           }
         })
-      } else {
-        router.push('/login?error=auth')
       }
     }
   }, [router])
