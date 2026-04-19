@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase-server'
 import chromium from '@sparticuz/chromium'
-import puppeteer, { type PuppeteerLaunchOptions } from 'puppeteer-core'
+import puppeteer from 'puppeteer-core'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -53,14 +53,12 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.`
 async function captureScreenshot(url: string): Promise<string | null> {
   let browser = null
   try {
-    const executablePath = await chromium.executablePath()
-    const options: PuppeteerLaunchOptions = {
+    browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath,
+      executablePath: await chromium.executablePath(),
       headless: chromium.headless,
-    }
-    browser = await puppeteer.launch(options)
+    })
     const page = await browser.newPage()
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 })
     const buffer = await page.screenshot({ type: 'jpeg', quality: 80 })
