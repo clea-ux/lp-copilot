@@ -50,6 +50,7 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.`
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('ANTHROPIC_API_KEY exists:', !!process.env.ANTHROPIC_API_KEY)
     const { projectId, description } = await request.json()
 
     if (!projectId || !description) {
