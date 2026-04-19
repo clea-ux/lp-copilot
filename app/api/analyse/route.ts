@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase-server'
-import chromium from '@sparticuz/chromium'
-import puppeteer from 'puppeteer-core'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -51,23 +49,19 @@ Pour chaque analyse, tu produis un JSON structuré avec exactement ce format :
 Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.`
 
 async function captureScreenshot(url: string): Promise<string | null> {
-  let browser = null
   try {
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: { width: 1280, height: 900 },
-      executablePath: await chromium.executablePath(),
-      headless: true,
-    })
-    const page = await browser.newPage()
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 })
-    const buffer = await page.screenshot({ type: 'jpeg', quality: 80 })
+    const accessKey = process.env.SCREENSHOTONE_API_KEY || 'demo'
+    const apiUrl = `https://api.screenshotone.com/take?access_key=${accessKey}&url=${encodeURIComponent(url)}&format=jpg&viewport_width=1280&viewport_height=900`
+    const response = await fetch(apiUrl)
+    if (!response.ok) {
+      console.error('Screenshot API error:', response.status)
+      return null
+    }
+    const buffer = await response.arrayBuffer()
     return Buffer.from(buffer).toString('base64')
   } catch (err) {
     console.error('Screenshot failed:', err)
     return null
-  } finally {
-    if (browser) await browser.close()
   }
 }
 
