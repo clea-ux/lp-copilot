@@ -55,7 +55,7 @@ async function captureScreenshot(url: string): Promise<string | null> {
   try {
     browser = await puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
+      defaultViewport: { width: 1280, height: 900 },
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     })
