@@ -56,11 +56,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Données manquantes.' }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
+
+    if (!token) {
+    return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 })
+    }
+
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
+    const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+    )
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 })
+    return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 })
     }
 
     const { data: project } = await supabase

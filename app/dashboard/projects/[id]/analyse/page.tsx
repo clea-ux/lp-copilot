@@ -21,11 +21,16 @@ export default function AnalysePage() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analyse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectId: id, description }),
-      })
+      const { data: { session } } = await supabase.auth.getSession()
+
+    const response = await fetch('/api/analyse', {
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+    },
+    body: JSON.stringify({ projectId: id, description }),
+    })
 
       const data = await response.json()
 
