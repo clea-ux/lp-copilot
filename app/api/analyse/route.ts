@@ -50,11 +50,24 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.`
 
 async function captureScreenshot(url: string): Promise<string | null> {
   try {
-    const accessKey = process.env.SCREENSHOTONE_API_KEY || 'demo'
-    const apiUrl = `https://api.screenshotone.com/take?access_key=${accessKey}&url=${encodeURIComponent(url)}&format=jpg&viewport_width=1280&viewport_height=900`
-    const response = await fetch(apiUrl)
+    const params = new URLSearchParams({
+      url,
+      screenshot: 'true',
+      meta: 'false',
+      embed: 'screenshot.url',
+      type: 'jpeg',
+      'viewport.width': '1280',
+      'viewport.height': '900',
+    })
+
+    const apiKey = process.env.MICROLINK_API_KEY
+    const apiUrl = `https://${apiKey ? 'pro' : 'api'}.microlink.io/?${params}`
+    const headers: Record<string, string> = {}
+    if (apiKey) headers['x-api-key'] = apiKey
+
+    const response = await fetch(apiUrl, { headers })
     if (!response.ok) {
-      console.error('Screenshot API error:', response.status)
+      console.error('Screenshot API error:', response.status, await response.text())
       return null
     }
     const buffer = await response.arrayBuffer()
